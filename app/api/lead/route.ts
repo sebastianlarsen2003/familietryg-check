@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       .join("");
 
     await resend.emails.send({
-      from: "FamilieTryg <onboarding@resend.dev>",
+      from: "FamilieTryg by RådgiverXperten <info@raadgiverxperten.dk>",
       to: [lead.email],
       subject: "Dit FamilieTryg-overblik er klar",
       html: `
