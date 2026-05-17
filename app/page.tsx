@@ -359,6 +359,7 @@ async function submitLead() {
         lead,
         result: result.level,
         observations: result.observations,
+        answers,
       }),
     });
 
