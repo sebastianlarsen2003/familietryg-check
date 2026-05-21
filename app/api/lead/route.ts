@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       .join("");
 
     await resend.emails.send({
-      from: "FamilieTryg by RådgiverXperten <info@raadgiverxperten.dk>",
+      from: "RådgiverXperten <info@raadgiverxperten.dk>",
       to: [lead.email],
       subject: "Dit FamilieTryg-overblik er klar",
       html: `
@@ -53,9 +53,6 @@ export async function POST(req: Request) {
                     <td style="padding:24px 18px 8px 18px;">
                       <div style="font-size:12px;font-weight:900;letter-spacing:2px;color:#4FB7E7;text-transform:uppercase;">
                         FamilieTryg
-                      </div>
-                      <div style="font-size:11px;color:#98A2B3;margin-top:5px;font-weight:700;">
-                        by RådgiverXperten
                       </div>
                     </td>
                   </tr>

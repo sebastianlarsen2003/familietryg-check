@@ -24,6 +24,7 @@ type Step = {
   question: string;
   subtitle?: string;
   pain?: string;
+  multiple?: boolean;
   condition?: (answers: Record<string, string>) => boolean;
   answers: Answer[];
 };
@@ -39,10 +40,12 @@ const allSteps: Step[] = [
     id: "status",
     question: "Hvordan ser din familiesituation ud i dag?",
     subtitle: "Familiesituationen har stor betydning for arv og begunstigelser.",
-    pain: "Mange opdager først for sent, at samliv, skilsmisse eller ændrede familieforhold kan få stor betydning for, hvem der faktisk får hvad.",
+    pain:
+      "Mange opdager først for sent, at samliv, kæreste, skilsmisse eller ændrede familieforhold kan få stor betydning for, hvem der faktisk får hvad.",
     answers: [
       { label: "Jeg er gift", value: "gift", score: 0 },
       { label: "Jeg er samlevende", value: "samlevende", score: 3 },
+      { label: "Jeg har en kæreste", value: "kaereste", score: 4 },
       { label: "Jeg er single", value: "single", score: 1 },
       { label: "Jeg er skilt eller separeret", value: "skilt", score: 3 },
       { label: "Jeg er enke/enkemand", value: "enke", score: 1 },
@@ -52,7 +55,8 @@ const allSteps: Step[] = [
     id: "children",
     question: "Er der børn eller særbørn i billedet?",
     subtitle: "Særligt særbørn kan gøre arveforhold mere komplekse.",
-    pain: "Hvis der er børn eller særbørn, kan fordelingen blive anderledes, end familien umiddelbart forventer.",
+    pain:
+      "Hvis der er børn eller særbørn, kan fordelingen blive anderledes, end familien umiddelbart forventer.",
     answers: [
       { label: "Nej, ingen børn", value: "ingen", score: 0 },
       { label: "Ja, fælles børn", value: "faelles", score: 1 },
@@ -64,7 +68,8 @@ const allSteps: Step[] = [
     id: "minorChildren",
     question: "Er nogle af børnene under 18 år?",
     subtitle: "Mindreårige børn kan gøre behovet for planlægning større.",
-    pain: "Når der er mindreårige børn, kan manglende planlægning skabe ekstra usikkerhed om arv, værgemål og praktisk sikring.",
+    pain:
+      "Når der er mindreårige børn, kan manglende planlægning skabe ekstra usikkerhed om arv, værgemål og praktisk sikring.",
     condition: (answers) =>
       ["faelles", "saerboern", "begge"].includes(answers.children),
     answers: [
@@ -137,14 +142,15 @@ const allSteps: Step[] = [
   {
     id: "assets",
     question: "Er der større økonomiske forhold, der bør tages højde for?",
-    subtitle: "Bolig, virksomhed og større opsparing kan øge kompleksiteten.",
+    subtitle: "Du kan vælge flere svar.",
     pain:
       "Jo flere værdier der er involveret, desto vigtigere bliver det at have styr på dokumenter, ejerskab og udbetalinger.",
+    multiple: true,
     answers: [
-      { label: "Ja, jeg ejer bolig", value: "bolig", score: 1 },
-      { label: "Ja, jeg har virksomhed", value: "virksomhed", score: 5 },
+      { label: "Jeg ejer bolig", value: "bolig", score: 1 },
+      { label: "Jeg har virksomhed", value: "virksomhed", score: 5 },
       {
-        label: "Ja, større opsparing eller investeringer",
+        label: "Jeg har større opsparing eller investeringer",
         value: "opsparing",
         score: 2,
       },
@@ -172,16 +178,24 @@ function getActiveSteps(answers: Record<string, string>) {
   return allSteps.filter((step) => !step.condition || step.condition(answers));
 }
 
+function includesAnswer(
+  answers: Record<string, string>,
+  id: string,
+  value: string
+) {
+  return answers[id]?.split(",").includes(value);
+}
+
 function buildObservations(answers: Record<string, string>): Observation[] {
   const observations: Observation[] = [];
 
   if (
-    answers.status === "samlevende" &&
+    ["samlevende", "kaereste"].includes(answers.status) &&
     ["nej", "usikker", "gammelt"].includes(answers.testament)
   ) {
     observations.push({
-      title: "Samliv giver ikke automatisk samme arveret som ægteskab",
-      text: "Hvis man er samlevende uden et opdateret testamente, kan arven ende anderledes, end mange forventer.",
+      title: "Samliv eller kæreste giver ikke automatisk samme arveret som ægteskab",
+      text: "Hvis man ikke er gift og der ikke er oprettet eller opdateret testamente, kan arven ende anderledes, end mange forventer.",
       severity: "high",
     });
   }
@@ -192,7 +206,7 @@ function buildObservations(answers: Record<string, string>): Observation[] {
   ) {
     observations.push({
       title: "Gamle begunstigelser kan stadig være aktive",
-      text: "Efter skilsmisse eller separation kan det være vigtigt at kontrollere, hvem der står som begunstiget.",
+      text: "Efter skilsmisse eller separation kan det være vigtigt at kontrollere, hvem der står som begunstiget på pensioner og forsikringer.",
       severity: "high",
     });
   }
@@ -232,18 +246,34 @@ function buildObservations(answers: Record<string, string>): Observation[] {
     });
   }
 
-  if (answers.assets === "virksomhed") {
+  if (includesAnswer(answers, "assets", "virksomhed")) {
     observations.push({
       title: "Virksomhed kan gøre planlægningen mere sårbar",
-      text: "Hvis du har virksomhed, kan det være vigtigt at tage stilling til ejerskab, drift og overdragelse.",
+      text: "Hvis du har virksomhed, kan det være vigtigt at tage stilling til ejerskab, drift og overdragelse, hvis der sker noget uventet.",
       severity: "high",
+    });
+  }
+
+  if (includesAnswer(answers, "assets", "bolig")) {
+    observations.push({
+      title: "Bolig kan gøre det ekstra vigtigt at have klare ønsker",
+      text: "Når der er fast ejendom involveret, kan det få stor praktisk betydning, hvordan arv og ejerskab håndteres.",
+      severity: "medium",
     });
   }
 
   if (answers.pensionInsurance === "flere") {
     observations.push({
       title: "Pensioner flere steder kan skabe manglende overblik",
-      text: "Når pensioner er spredt flere steder, kan det være lettere at overse gamle ordninger og begunstigelser.",
+      text: "Når pensioner er spredt flere steder, kan det være lettere at overse gamle ordninger, dækninger og begunstigelser.",
+      severity: "medium",
+    });
+  }
+
+  if (includesAnswer(answers, "assets", "opsparing")) {
+    observations.push({
+      title: "Større opsparing eller investeringer kan kræve ekstra overblik",
+      text: "Når der er større værdier involveret, kan det være relevant at sikre, at ønsker, dokumenter og fordeling fortsat passer til situationen.",
       severity: "medium",
     });
   }
@@ -277,7 +307,7 @@ export default function Home() {
   const [lead, setLead] = useState({
     name: "",
     email: "",
-    wantsContact: "no",
+    wantsContact: "yes",
     phone: "",
     preferredTime: "",
     consent: false,
@@ -290,7 +320,21 @@ export default function Home() {
 
   const result = useMemo(() => {
     const score = activeSteps.reduce((sum, s) => {
-      const answer = s.answers.find((a) => a.value === answers[s.id]);
+      const answerValue = answers[s.id];
+
+      if (!answerValue) return sum;
+
+      if (s.multiple) {
+        return (
+          sum +
+          answerValue.split(",").reduce((innerSum, value) => {
+            const answer = s.answers.find((a) => a.value === value);
+            return innerSum + (answer?.score || 0);
+          }, 0)
+        );
+      }
+
+      const answer = s.answers.find((a) => a.value === answerValue);
       return sum + (answer?.score || 0);
     }, 0);
 
@@ -324,6 +368,13 @@ export default function Home() {
     };
   }, [answers, activeSteps]);
 
+  const resultColor =
+    result.level === "Høj kompleksitet"
+      ? "#B42318"
+      : result.level === "Middel kompleksitet"
+      ? "#B54708"
+      : "#027A48";
+
   const canSubmit =
     lead.name.trim() &&
     lead.email.trim() &&
@@ -333,6 +384,29 @@ export default function Home() {
       (lead.phone.trim() && lead.preferredTime.trim()));
 
   function selectAnswer(value: string) {
+    if (step.multiple) {
+      const currentValues = answers[step.id] ? answers[step.id].split(",") : [];
+
+      let updatedValues: string[];
+
+      if (value === "nej") {
+        updatedValues = currentValues.includes("nej") ? [] : ["nej"];
+      } else {
+        const filteredValues = currentValues.filter((v) => v !== "nej");
+
+        updatedValues = filteredValues.includes(value)
+          ? filteredValues.filter((v) => v !== value)
+          : [...filteredValues, value];
+      }
+
+      setAnswers({
+        ...answers,
+        [step.id]: updatedValues.join(","),
+      });
+
+      return;
+    }
+
     const nextAnswers = { ...answers, [step.id]: value };
     setAnswers(nextAnswers);
 
@@ -346,6 +420,17 @@ export default function Home() {
         setCurrentStep(nextIndex);
       }
     }, 180);
+  }
+
+  function nextStep() {
+    const nextActiveSteps = getActiveSteps(answers);
+    const nextIndex = currentStep + 1;
+
+    if (nextIndex >= nextActiveSteps.length) {
+      setCurrentStep(nextActiveSteps.length);
+    } else {
+      setCurrentStep(nextIndex);
+    }
   }
 
   function goBack() {
@@ -378,6 +463,10 @@ export default function Home() {
       }
 
       setSubmitted(true);
+
+      setTimeout(() => {
+        window.location.href = "https://raadgiverxperten.dk";
+      }, 2500);
     } catch (error) {
       console.error(error);
       alert("Der skete en fejl.");
@@ -391,7 +480,7 @@ export default function Home() {
       <header className="relative z-10 border-b border-[#253457]/10 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-10">
           <img
-            src="/logo.png"
+            src="/Logo-A.png"
             alt="RådgiverXperten"
             className="h-7 w-auto md:h-8"
           />
@@ -416,6 +505,12 @@ export default function Home() {
             className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center px-6 py-16"
           >
             <div className="mx-auto max-w-5xl text-center">
+              <img
+                src="/Logo-A.png"
+                alt="RådgiverXperten"
+                className="mx-auto mb-10 h-9 w-auto md:h-11"
+              />
+
               <p className="mb-8 text-sm font-black uppercase tracking-[0.32em] text-[#4FB7E7] md:text-base">
                 FamilieTryg
               </p>
@@ -446,6 +541,23 @@ export default function Home() {
                 <div className="inline-flex items-center gap-3 rounded-full border border-[#253457]/10 bg-white/80 px-6 py-4 text-sm font-semibold text-[#4B5563] shadow-sm">
                   <Clock3 size={18} className="text-[#4FB7E7]" />
                   Ca. 2 minutter
+                </div>
+              </div>
+
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-sm text-[#667085]">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck size={18} className="text-[#4FB7E7]" />
+                  Vejledende overblik
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <FileText size={18} className="text-[#4FB7E7]" />
+                  Personligt resultat
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Check size={18} className="text-[#4FB7E7]" />
+                  Uforpligtende
                 </div>
               </div>
             </div>
@@ -509,24 +621,58 @@ export default function Home() {
                 )}
 
                 <div className="mt-7 space-y-2.5">
-                  {step.answers.map((answer) => (
-                    <button
-                      key={answer.value}
-                      onClick={() => selectAnswer(answer.value)}
-                      className="group flex w-full cursor-pointer items-center justify-between gap-4 rounded-[18px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-left transition hover:border-[#4FB7E7]/60 hover:bg-white hover:shadow-sm"
-                    >
-                      <span className="text-[0.98rem] font-semibold text-[#253457]">
-                        {answer.label}
-                      </span>
+                  {step.answers.map((answer) => {
+                    const selected = answers[step.id]
+                      ?.split(",")
+                      .includes(answer.value);
 
-                      <ArrowRight
-                        size={17}
-                        className="text-[#A0A8B8] transition group-hover:translate-x-1 group-hover:text-[#4FB7E7]"
-                      />
-                    </button>
-                  ))}
+                    return (
+                      <button
+                        key={answer.value}
+                        onClick={() => selectAnswer(answer.value)}
+                        className={`group flex w-full cursor-pointer items-center justify-between gap-4 rounded-[18px] border px-4 py-3.5 text-left transition ${
+                          selected
+                            ? "border-[#4FB7E7] bg-[#EAF7FD]"
+                            : "border-[#253457]/10 bg-[#FBFCFD] hover:border-[#4FB7E7]/60 hover:bg-white hover:shadow-sm"
+                        }`}
+                      >
+                        <span className="text-[0.98rem] font-semibold text-[#253457]">
+                          {answer.label}
+                        </span>
+
+                        {step.multiple && selected ? (
+                          <Check size={17} className="text-[#4FB7E7]" />
+                        ) : (
+                          <ArrowRight
+                            size={17}
+                            className="text-[#A0A8B8] transition group-hover:translate-x-1 group-hover:text-[#4FB7E7]"
+                          />
+                        )}
+                      </button>
+                    );
+                  })}
                 </div>
+
+                {step.multiple && (
+                  <button
+                    onClick={nextStep}
+                    disabled={!answers[step.id]}
+                    className={`mt-5 inline-flex w-full items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-bold transition ${
+                      answers[step.id]
+                        ? "cursor-pointer bg-[#253457] text-white hover:bg-[#1D2948]"
+                        : "cursor-not-allowed bg-[#D7DEE8] text-white"
+                    }`}
+                  >
+                    Videre
+                    <ArrowRight size={18} />
+                  </button>
+                )}
               </div>
+
+              <p className="mt-5 text-center text-xs leading-relaxed text-[#8D95A6]">
+                FamilieTryg Tjek er vejledende og erstatter ikke juridisk eller
+                finansiel rådgivning.
+              </p>
             </div>
           </motion.section>
         ) : submitted ? (
@@ -548,8 +694,8 @@ export default function Home() {
               </h2>
 
               <p className="mx-auto mt-4 max-w-md text-[#667085] leading-relaxed">
-                Tak — vi har modtaget dine oplysninger. Du vil modtage dit
-                FamilieTryg-overblik på mail.
+                Tak — vi har modtaget dine oplysninger. Du videresendes om lidt
+                til RådgiverXperten.
               </p>
             </div>
           </motion.section>
@@ -643,45 +789,38 @@ export default function Home() {
                     </div>
                   </div>
 
-                  <AnimatePresence>
-                    {lead.wantsContact === "yes" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="space-y-4 overflow-hidden"
-                      >
-                        <input
-                          value={lead.phone}
-                          onChange={(e) =>
-                            setLead((prev) => ({
-                              ...prev,
-                              phone: e.target.value,
-                            }))
-                          }
-                          placeholder="Telefonnummer"
-                          className="w-full rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#4FB7E7]"
-                        />
+                  {lead.wantsContact === "yes" && (
+                    <div className="space-y-4">
+                      <input
+                        value={lead.phone}
+                        onChange={(e) =>
+                          setLead((prev) => ({
+                            ...prev,
+                            phone: e.target.value,
+                          }))
+                        }
+                        placeholder="Telefonnummer"
+                        className="w-full rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold outline-none transition focus:border-[#4FB7E7]"
+                      />
 
-                        <select
-                          value={lead.preferredTime}
-                          onChange={(e) =>
-                            setLead((prev) => ({
-                              ...prev,
-                              preferredTime: e.target.value,
-                            }))
-                          }
-                          className="w-full cursor-pointer rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold text-[#667085] outline-none transition focus:border-[#4FB7E7]"
-                        >
-                          <option value="">Hvornår passer det bedst?</option>
-                          <option value="morgen">Morgen</option>
-                          <option value="formiddag">Formiddag</option>
-                          <option value="eftermiddag">Eftermiddag</option>
-                          <option value="aften">Aften</option>
-                        </select>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+                      <select
+                        value={lead.preferredTime}
+                        onChange={(e) =>
+                          setLead((prev) => ({
+                            ...prev,
+                            preferredTime: e.target.value,
+                          }))
+                        }
+                        className="w-full cursor-pointer rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold text-[#667085] outline-none transition focus:border-[#4FB7E7]"
+                      >
+                        <option value="">Hvornår passer det bedst?</option>
+                        <option value="morgen">Morgen</option>
+                        <option value="formiddag">Formiddag</option>
+                        <option value="eftermiddag">Eftermiddag</option>
+                        <option value="aften">Aften</option>
+                      </select>
+                    </div>
+                  )}
 
                   <label className="flex cursor-pointer items-start gap-3 rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] p-4">
                     <input
@@ -698,10 +837,9 @@ export default function Home() {
 
                     <span className="text-xs leading-relaxed text-[#667085]">
                       Jeg accepterer, at RådgiverXperten må behandle mine
-                      oplysninger og sende mit FamilieTryg-overblik på mail. Hvis
-                      jeg ønsker kontakt, accepterer jeg også, at relevante
-                      oplysninger kan videregives til udvalgte samarbejdspartnere
-                      med henblik på kontakt.
+                      oplysninger og kontakte mig telefonisk og på mail
+                      vedrørende mit FamilieTryg-overblik. Jeg kan til enhver
+                      tid trække mit samtykke tilbage.
                     </span>
                   </label>
 
@@ -736,7 +874,10 @@ export default function Home() {
                   Dit FamilieTryg-overblik
                 </p>
 
-                <h2 className="mt-4 text-[2.15rem] font-black leading-none tracking-[-0.04em] text-[#253457] md:text-[3.1rem]">
+                <h2
+                  style={{ color: resultColor }}
+                  className="mt-4 text-[2.15rem] font-black leading-none tracking-[-0.04em] md:text-[3.1rem]"
+                >
                   {result.level}
                 </h2>
 
