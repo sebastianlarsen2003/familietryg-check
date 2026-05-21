@@ -23,6 +23,7 @@ type Step = {
   id: string;
   question: string;
   subtitle?: string;
+  pain?: string;
   condition?: (answers: Record<string, string>) => boolean;
   answers: Answer[];
 };
@@ -38,6 +39,7 @@ const allSteps: Step[] = [
     id: "status",
     question: "Hvordan ser din familiesituation ud i dag?",
     subtitle: "Familiesituationen har stor betydning for arv og begunstigelser.",
+    pain: "Mange opdager først for sent, at samliv, skilsmisse eller ændrede familieforhold kan få stor betydning for, hvem der faktisk får hvad.",
     answers: [
       { label: "Jeg er gift", value: "gift", score: 0 },
       { label: "Jeg er samlevende", value: "samlevende", score: 3 },
@@ -50,6 +52,7 @@ const allSteps: Step[] = [
     id: "children",
     question: "Er der børn eller særbørn i billedet?",
     subtitle: "Særligt særbørn kan gøre arveforhold mere komplekse.",
+    pain: "Hvis der er børn eller særbørn, kan fordelingen blive anderledes, end familien umiddelbart forventer.",
     answers: [
       { label: "Nej, ingen børn", value: "ingen", score: 0 },
       { label: "Ja, fælles børn", value: "faelles", score: 1 },
@@ -61,6 +64,7 @@ const allSteps: Step[] = [
     id: "minorChildren",
     question: "Er nogle af børnene under 18 år?",
     subtitle: "Mindreårige børn kan gøre behovet for planlægning større.",
+    pain: "Når der er mindreårige børn, kan manglende planlægning skabe ekstra usikkerhed om arv, værgemål og praktisk sikring.",
     condition: (answers) =>
       ["faelles", "saerboern", "begge"].includes(answers.children),
     answers: [
@@ -74,6 +78,8 @@ const allSteps: Step[] = [
     question: "Har du sikret, at arven fordeles efter dine egne ønsker?",
     subtitle:
       "Et testamente kan være vigtigt, hvis standardreglerne ikke matcher din familiesituation.",
+    pain:
+      "Uden et opdateret testamente kan arven ende anderledes, end du og din familie forventer.",
     answers: [
       { label: "Ja, det har jeg taget stilling til", value: "ja", score: 0 },
       { label: "Nej, ikke endnu", value: "nej", score: 4 },
@@ -86,6 +92,8 @@ const allSteps: Step[] = [
     question: "Har du pensioner eller livsforsikringer?",
     subtitle:
       "Pension og forsikring kan have egne begunstigelser, som ikke nødvendigvis følger arven.",
+    pain:
+      "Pension og forsikring kan i nogle tilfælde blive udbetalt uden om den almindelige arv.",
     answers: [
       { label: "Ja", value: "ja", score: 1 },
       { label: "Ja, flere steder", value: "flere", score: 2 },
@@ -95,9 +103,11 @@ const allSteps: Step[] = [
   },
   {
     id: "beneficiary",
-    question: "Ved du, hvem der får dine pensioner og forsikringer udbetalt?",
+    question: "Ved du, hvem der får pensioner og forsikringer udbetalt?",
     subtitle:
       "Begunstigelser kan være noget af det, mange glemmer at få opdateret.",
+    pain:
+      "En gammel begunstigelse kan betyde, at pengene går til en anden end den, du tror.",
     condition: (answers) =>
       ["ja", "flere", "usikker"].includes(answers.pensionInsurance),
     answers: [
@@ -111,6 +121,8 @@ const allSteps: Step[] = [
     id: "power",
     question: "Har du taget stilling til, hvem der kan handle for dig ved sygdom?",
     subtitle: "Det handler blandt andet om fremtidsfuldmagt og praktisk hjælp.",
+    pain:
+      "Uden fremtidsfuldmagt kan dine nærmeste få sværere ved at hjælpe med økonomi og beslutninger, hvis du ikke selv kan.",
     answers: [
       { label: "Ja, det er på plads", value: "ja", score: 0 },
       { label: "Nej, ikke endnu", value: "nej", score: 3 },
@@ -126,6 +138,8 @@ const allSteps: Step[] = [
     id: "assets",
     question: "Er der større økonomiske forhold, der bør tages højde for?",
     subtitle: "Bolig, virksomhed og større opsparing kan øge kompleksiteten.",
+    pain:
+      "Jo flere værdier der er involveret, desto vigtigere bliver det at have styr på dokumenter, ejerskab og udbetalinger.",
     answers: [
       { label: "Ja, jeg ejer bolig", value: "bolig", score: 1 },
       { label: "Ja, jeg har virksomhed", value: "virksomhed", score: 5 },
@@ -142,6 +156,8 @@ const allSteps: Step[] = [
     question: "Hvornår blev det hele sidst gennemgået?",
     subtitle:
       "Ændringer i familie, bolig, pension eller arbejde kan hurtigt gøre gamle valg forældede.",
+    pain:
+      "Gamle valg kan stadig gælde, selvom din familie, økonomi eller ønsker har ændret sig.",
     answers: [
       { label: "Inden for det seneste år", value: "senest_aar", score: 0 },
       { label: "For 1–3 år siden", value: "1_3", score: 1 },
@@ -287,8 +303,6 @@ export default function Home() {
         level: "Høj kompleksitet",
         intro:
           "Der er flere forhold i dine svar, som kan få praktisk betydning for din familie, hvis de ikke er afklaret.",
-        color: "#B42318",
-        soft: "#FFF5F5",
         observations,
       };
     }
@@ -298,8 +312,6 @@ export default function Home() {
         level: "Middel kompleksitet",
         intro:
           "Der er enkelte forhold, som kan være vigtige at få gennemgået, så dine ønsker og oplysninger passer til din situation.",
-        color: "#B54708",
-        soft: "#FFFAEB",
         observations,
       };
     }
@@ -308,8 +320,6 @@ export default function Home() {
       level: "Lav kompleksitet",
       intro:
         "Din situation ser umiddelbart overskuelig ud, men det er stadig vigtigt at holde dokumenter og begunstigelser opdateret.",
-      color: "#027A48",
-      soft: "#ECFDF3",
       observations,
     };
   }, [answers, activeSteps]);
@@ -346,33 +356,33 @@ export default function Home() {
     }
   }
 
-async function submitLead() {
-  if (!canSubmit) return;
+  async function submitLead() {
+    if (!canSubmit) return;
 
-  try {
-    const response = await fetch("/api/lead", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        lead,
-        result: result.level,
-        observations: result.observations,
-        answers,
-      }),
-    });
+    try {
+      const response = await fetch("/api/lead", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          lead,
+          result: result.level,
+          observations: result.observations,
+          answers,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error("Failed");
+      if (!response.ok) {
+        throw new Error("Failed");
+      }
+
+      setSubmitted(true);
+    } catch (error) {
+      console.error(error);
+      alert("Der skete en fejl.");
     }
-
-    setSubmitted(true);
-  } catch (error) {
-    console.error(error);
-    alert("Der skete en fejl.");
   }
-}
 
   return (
     <main className="min-h-screen bg-[#F4FAFA] text-[#253457] overflow-hidden">
@@ -381,14 +391,14 @@ async function submitLead() {
       <header className="relative z-10 border-b border-[#253457]/10 bg-white/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 md:px-10">
           <img
-  src="/Logo-A.png"
-  alt="RådgiverXperten"
-  className="h-8 w-auto md:h-9"
-/>
+            src="/logo.png"
+            alt="RådgiverXperten"
+            className="h-7 w-auto md:h-8"
+          />
 
           <button
             onClick={() => setStarted(true)}
-            className="hidden rounded-full bg-[#253457] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1D2948] sm:inline-flex"
+            className="hidden cursor-pointer rounded-full bg-[#253457] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1D2948] sm:inline-flex"
           >
             Start gratis check
           </button>
@@ -406,12 +416,8 @@ async function submitLead() {
             className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center px-6 py-16"
           >
             <div className="mx-auto max-w-5xl text-center">
-              <p className="mb-3 text-sm font-black uppercase tracking-[0.32em] text-[#4FB7E7] md:text-base">
+              <p className="mb-8 text-sm font-black uppercase tracking-[0.32em] text-[#4FB7E7] md:text-base">
                 FamilieTryg
-              </p>
-
-              <p className="mb-8 text-xs font-semibold uppercase tracking-[0.28em] text-[#8D95A6] md:text-sm">
-                by RådgiverXperten
               </p>
 
               <h1 className="mx-auto max-w-5xl text-[3rem] font-black leading-[0.98] tracking-[-0.05em] text-[#253457] md:text-[4.4rem]">
@@ -428,7 +434,7 @@ async function submitLead() {
               <div className="mt-11 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
                   onClick={() => setStarted(true)}
-                  className="group inline-flex items-center justify-center gap-3 rounded-full bg-[#253457] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#253457]/15 transition hover:bg-[#1D2948]"
+                  className="group inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#253457]/15 transition hover:bg-[#1D2948]"
                 >
                   Start gratis check
                   <ArrowRight
@@ -456,7 +462,7 @@ async function submitLead() {
             <div className="w-full max-w-2xl">
               <button
                 onClick={goBack}
-                className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-[#8D95A6] transition hover:text-[#253457]"
+                className="mb-7 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-[#8D95A6] transition hover:text-[#253457]"
               >
                 <ChevronLeft size={18} />
                 Tilbage
@@ -488,12 +494,26 @@ async function submitLead() {
                   {step.subtitle}
                 </p>
 
+                {step.pain && (
+                  <div className="mt-4 rounded-[18px] border border-[#FEC84B]/40 bg-[#FFFCF2] p-4">
+                    <div className="flex gap-3">
+                      <AlertTriangle
+                        size={18}
+                        className="mt-0.5 shrink-0 text-[#F79009]"
+                      />
+                      <p className="text-sm leading-relaxed text-[#6B4E16]">
+                        {step.pain}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="mt-7 space-y-2.5">
                   {step.answers.map((answer) => (
                     <button
                       key={answer.value}
                       onClick={() => selectAnswer(answer.value)}
-                      className="group flex w-full items-center justify-between gap-4 rounded-[18px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-left transition hover:border-[#4FB7E7]/60 hover:bg-white hover:shadow-sm"
+                      className="group flex w-full cursor-pointer items-center justify-between gap-4 rounded-[18px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-left transition hover:border-[#4FB7E7]/60 hover:bg-white hover:shadow-sm"
                     >
                       <span className="text-[0.98rem] font-semibold text-[#253457]">
                         {answer.label}
@@ -545,7 +565,7 @@ async function submitLead() {
             <div className="w-full max-w-xl">
               <button
                 onClick={() => setShowLeadForm(false)}
-                className="mb-7 inline-flex items-center gap-2 text-sm font-medium text-[#8D95A6] transition hover:text-[#253457]"
+                className="mb-7 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-[#8D95A6] transition hover:text-[#253457]"
               >
                 <ChevronLeft size={18} />
                 Tilbage til resultat
@@ -611,7 +631,7 @@ async function submitLead() {
                               wantsContact: option.value,
                             }))
                           }
-                          className={`rounded-[16px] border px-4 py-3 text-sm font-bold transition ${
+                          className={`cursor-pointer rounded-[16px] border px-4 py-3 text-sm font-bold transition ${
                             lead.wantsContact === option.value
                               ? "border-[#4FB7E7] bg-[#EAF7FD] text-[#253457]"
                               : "border-[#253457]/10 bg-[#FBFCFD] text-[#667085]"
@@ -651,7 +671,7 @@ async function submitLead() {
                               preferredTime: e.target.value,
                             }))
                           }
-                          className="w-full rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold text-[#667085] outline-none transition focus:border-[#4FB7E7]"
+                          className="w-full cursor-pointer rounded-[16px] border border-[#253457]/10 bg-[#FBFCFD] px-4 py-3.5 text-sm font-semibold text-[#667085] outline-none transition focus:border-[#4FB7E7]"
                         >
                           <option value="">Hvornår passer det bedst?</option>
                           <option value="morgen">Morgen</option>
@@ -673,7 +693,7 @@ async function submitLead() {
                           consent: e.target.checked,
                         }))
                       }
-                      className="mt-1 h-4 w-4"
+                      className="mt-1 h-4 w-4 cursor-pointer"
                     />
 
                     <span className="text-xs leading-relaxed text-[#667085]">
@@ -690,7 +710,7 @@ async function submitLead() {
                     disabled={!canSubmit}
                     className={`inline-flex w-full items-center justify-center gap-3 rounded-full px-6 py-3.5 text-sm font-bold transition ${
                       canSubmit
-                        ? "bg-[#253457] text-white hover:bg-[#1D2948]"
+                        ? "cursor-pointer bg-[#253457] text-white hover:bg-[#1D2948]"
                         : "cursor-not-allowed bg-[#D7DEE8] text-white"
                     }`}
                   >
@@ -724,15 +744,15 @@ async function submitLead() {
                   {result.intro}
                 </p>
 
-                <div className="mt-6 rounded-[22px] border border-[#B42318]/15 bg-[#FFF7F7] p-5">
+                <div className="mt-6 rounded-[22px] border border-[#FEC84B]/40 bg-[#FFFCF2] p-5">
                   <div className="flex gap-3">
                     <AlertTriangle
                       size={20}
-                      className="mt-1 shrink-0 text-[#B42318]"
+                      className="mt-1 shrink-0 text-[#F79009]"
                     />
 
                     <div>
-                      <h3 className="text-[1.05rem] font-black text-[#B42318]">
+                      <h3 className="text-[1.05rem] font-black text-[#B54708]">
                         Hvorfor kan det få betydning?
                       </h3>
 
@@ -785,7 +805,7 @@ async function submitLead() {
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <button
                     onClick={() => setShowLeadForm(true)}
-                    className="inline-flex items-center justify-center gap-3 rounded-full bg-[#253457] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D2948]"
+                    className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D2948]"
                   >
                     Send mit fulde FamilieTryg-overblik
                     <ArrowRight size={18} />
@@ -799,7 +819,7 @@ async function submitLead() {
                       setShowLeadForm(false);
                       setSubmitted(false);
                     }}
-                    className="inline-flex items-center justify-center rounded-full border border-[#253457]/10 bg-white px-6 py-3.5 text-sm font-bold text-[#253457] transition hover:bg-[#F8FAFC]"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-full border border-[#253457]/10 bg-white px-6 py-3.5 text-sm font-bold text-[#253457] transition hover:bg-[#F8FAFC]"
                   >
                     Start forfra
                   </button>
