@@ -505,11 +505,7 @@ export default function Home() {
             className="relative z-10 flex min-h-[calc(100vh-80px)] items-center justify-center px-6 py-16"
           >
             <div className="mx-auto max-w-5xl text-center">
-              <img
-                src="/Logo-A.png"
-                alt="RådgiverXperten"
-                className="mx-auto mb-10 h-9 w-auto md:h-11"
-              />
+              
 
               <p className="mb-8 text-sm font-black uppercase tracking-[0.32em] text-[#4FB7E7] md:text-base">
                 FamilieTryg
