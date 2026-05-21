@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { lead, result, observations } = body;
+    const { lead, result, observations, answers } = body;
 
     if (!lead?.name || !lead?.email) {
       return NextResponse.json({ error: "Missing lead data" }, { status: 400 });
@@ -159,6 +159,36 @@ export async function POST(req: Request) {
         </div>
       `,
     });
+
+    if (process.env.ZAPIER_WEBHOOK_URL) {
+  await fetch(process.env.ZAPIER_WEBHOOK_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      timestamp: new Date().toISOString(),
+      lead_name: lead.name,
+      lead_email: lead.email,
+      lead_phone: lead.phone || "",
+      wants_contact: lead.wantsContact === "yes" ? "Ja" : "Nej",
+      preferred_time: lead.preferredTime || "",
+      complexity: result,
+      observations: observations
+        .map((item: any) => item.title)
+        .join(" | "),
+      status: answers?.status || "",
+      children: answers?.children || "",
+      minor_children: answers?.minorChildren || "",
+      testament: answers?.testament || "",
+      pension_insurance: answers?.pensionInsurance || "",
+      beneficiary: answers?.beneficiary || "",
+      power: answers?.power || "",
+      assets: answers?.assets || "",
+      review: answers?.review || "",
+    }),
+  });
+}
 
     return NextResponse.json({ success: true });
   } catch (error) {
