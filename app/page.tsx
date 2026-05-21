@@ -14,6 +14,12 @@ import {
   Mail,
 } from "lucide-react";
 
+declare global {
+  interface Window {
+    fbq?: (...args: any[]) => void;
+  }
+}
+
 type Answer = {
   label: string;
   value: string;
@@ -466,6 +472,8 @@ export default function Home() {
 
       setSubmitted(true);
 
+      window.fbq?.("track", "Lead");
+
 track("Submitted Lead");
 
       setTimeout(() => {
@@ -492,6 +500,7 @@ track("Submitted Lead");
           <button
             onClick={() => {
   track("Started Check Header");
+  window.fbq?.("trackCustom", "StartedCheck");
   setStarted(true);
 }}
             className="hidden cursor-pointer rounded-full bg-[#253457] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1D2948] sm:inline-flex"
@@ -533,6 +542,7 @@ track("Submitted Lead");
                 <button
                   onClick={() => {
   track("Started Check Hero");
+  window.fbq?.("trackCustom", "StartedCheck");
   setStarted(true);
 }}
                   className="group inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#253457]/15 transition hover:bg-[#1D2948]"
@@ -953,6 +963,7 @@ track("Submitted Lead");
                   <button
                     onClick={() => {
   track("Opened Lead Form");
+  window.fbq?.("track", "Contact");
   setShowLeadForm(true);
 }}
                     className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D2948]"
