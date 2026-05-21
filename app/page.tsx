@@ -1,5 +1,6 @@
 "use client";
 
+import { track } from "@vercel/analytics";
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
@@ -384,6 +385,7 @@ export default function Home() {
       (lead.phone.trim() && lead.preferredTime.trim()));
 
   function selectAnswer(value: string) {
+    track(`Answered ${step.id}: ${value}`);
     if (step.multiple) {
       const currentValues = answers[step.id] ? answers[step.id].split(",") : [];
 
@@ -464,6 +466,8 @@ export default function Home() {
 
       setSubmitted(true);
 
+track("Submitted Lead");
+
       setTimeout(() => {
         window.location.href = "https://raadgiverxperten.dk";
       }, 2500);
@@ -486,7 +490,10 @@ export default function Home() {
           />
 
           <button
-            onClick={() => setStarted(true)}
+            onClick={() => {
+  track("Started Check Header");
+  setStarted(true);
+}}
             className="hidden cursor-pointer rounded-full bg-[#253457] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1D2948] sm:inline-flex"
           >
             Start gratis check
@@ -524,7 +531,10 @@ export default function Home() {
 
               <div className="mt-11 flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <button
-                  onClick={() => setStarted(true)}
+                  onClick={() => {
+  track("Started Check Hero");
+  setStarted(true);
+}}
                   className="group inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#253457]/15 transition hover:bg-[#1D2948]"
                 >
                   Start gratis check
@@ -941,7 +951,10 @@ export default function Home() {
 
                 <div className="mt-6 flex flex-col gap-3 sm:flex-row">
                   <button
-                    onClick={() => setShowLeadForm(true)}
+                    onClick={() => {
+  track("Opened Lead Form");
+  setShowLeadForm(true);
+}}
                     className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-full bg-[#253457] px-6 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D2948]"
                   >
                     Send mit fulde FamilieTryg-overblik
