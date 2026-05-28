@@ -476,9 +476,7 @@ export default function Home() {
 
 track("Submitted Lead");
 
-      setTimeout(() => {
-        window.location.href = "https://raadgiverxperten.dk";
-      }, 2500);
+
     } catch (error) {
       console.error(error);
       alert("Der skete en fejl.");
@@ -709,10 +707,44 @@ track("Submitted Lead");
                 Dit overblik er på vej
               </h2>
 
-              <p className="mx-auto mt-4 max-w-md text-[#667085] leading-relaxed">
-                Tak — vi har modtaget dine oplysninger. Du videresendes om lidt
-                til RådgiverXperten.
-              </p>
+            <p className="mx-auto mt-4 max-w-md text-center text-[#667085] leading-relaxed">
+  Vi har modtaget dine oplysninger og sender dit FamilieTryg-overblik til din mail.
+</p>
+
+<p className="mx-auto mt-4 max-w-md text-center text-[#667085] leading-relaxed">
+  Mange opdager først for sent, at der mangler stillingtagen til fx
+  begunstigelse, fremtidsfuldmagt eller familiens økonomiske overblik.
+</p>
+
+<p className="mx-auto mt-4 max-w-md text-center text-[#667085] leading-relaxed">
+  Derfor tilbyder vi et kort og uforpligtende telefonmøde, hvor vi hjælper med
+  at skabe overblik over jeres situation og mulige næste skridt.
+</p>
+
+<div className="mx-auto mt-7 flex w-full max-w-sm flex-col items-center gap-3">
+  <a
+    href="https://calendly.com/sebastian-raadgiverxperten/10min"
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={() => {
+      track("Clicked Calendly After Submit");
+      window.fbq?.("trackCustom", "ClickedCalendlyAfterSubmit");
+    }}
+    className="inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#253457] px-5 py-3.5 text-sm font-bold text-white transition hover:bg-[#1D2948]"
+  >
+    Book gratis telefonmøde
+    <ArrowRight size={17} />
+  </a>
+
+  <a
+    href="https://raadgiverxperten.dk"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex w-full cursor-pointer items-center justify-center rounded-full border border-[#253457]/15 bg-white px-5 py-3 text-sm font-semibold text-[#253457] transition hover:bg-[#F8FAFC]"
+  >
+    Gå til RådgiverXperten
+  </a>
+</div>
             </div>
           </motion.section>
         ) : showLeadForm ? (
@@ -971,19 +1003,7 @@ track("Submitted Lead");
                     Send mit fulde FamilieTryg-overblik
                     <ArrowRight size={18} />
                   </button>
-<a
-  href="https://calendly.com/sebastian-raadgiverxperten/10min"
-  target="_blank"
-  rel="noopener noreferrer"
-  onClick={() => {
-    track("Clicked Calendly Result");
-    window.fbq?.("trackCustom", "ClickedCalendly");
-  }}
-  className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-full border border-[#253457]/10 bg-white px-6 py-3.5 text-sm font-bold text-[#253457] transition hover:bg-[#F8FAFC]"
->
-  Book 10 min. telefonmøde
-  <ArrowRight size={18} />
-</a>
+
                   <button
                     onClick={() => {
                       setAnswers({});
