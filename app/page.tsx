@@ -884,11 +884,18 @@ track("Submitted Lead");
                     />
 
                     <span className="text-xs leading-relaxed text-[#667085]">
-                      Jeg accepterer, at RådgiverXperten må behandle mine
-                      oplysninger og kontakte mig telefonisk og på mail
-                      vedrørende mit FamilieTryg-overblik. Jeg kan til enhver
-                      tid trække mit samtykke tilbage.
-                    </span>
+  Jeg accepterer, at RådgiverXperten må behandle mine oplysninger og kontakte
+  mig telefonisk og på mail vedrørende mit FamilieTryg-overblik. Jeg kan til
+  enhver tid trække mit samtykke tilbage. Læs vores{" "}
+  <a
+    href="https://raadgiverxperten.dk/privatlivspolitik"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="font-semibold text-[#253457] underline underline-offset-2"
+  >
+    privatlivspolitik
+  </a>.
+</span>
                   </label>
 
                   <button
