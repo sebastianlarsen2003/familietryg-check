@@ -888,7 +888,7 @@ track("Submitted Lead");
   mig telefonisk og på mail vedrørende mit FamilieTryg-overblik. Jeg kan til
   enhver tid trække mit samtykke tilbage. Læs vores{" "}
   <a
-    href="https://raadgiverxperten.dk/privatlivspolitik"
+    href="https://raadgiverxperten.dk/privacy-policy/"
     target="_blank"
     rel="noopener noreferrer"
     className="font-semibold text-[#253457] underline underline-offset-2"
