@@ -971,7 +971,19 @@ track("Submitted Lead");
                     Send mit fulde FamilieTryg-overblik
                     <ArrowRight size={18} />
                   </button>
-
+<a
+  href="https://calendly.com/sebastian-raadgiverxperten/10min"
+  target="_blank"
+  rel="noopener noreferrer"
+  onClick={() => {
+    track("Clicked Calendly Result");
+    window.fbq?.("trackCustom", "ClickedCalendly");
+  }}
+  className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-full border border-[#253457]/10 bg-white px-6 py-3.5 text-sm font-bold text-[#253457] transition hover:bg-[#F8FAFC]"
+>
+  Book 10 min. telefonmøde
+  <ArrowRight size={18} />
+</a>
                   <button
                     onClick={() => {
                       setAnswers({});

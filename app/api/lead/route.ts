@@ -133,8 +133,8 @@ export async function POST(req: Request) {
 
                   <tr>
                     <td style="padding:4px 18px 22px 18px;">
-                      <a href="https://raadgiverxperten.dk" style="display:block;text-align:center;background:#253457;color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 18px;font-size:14px;font-weight:900;">
-                        Få hjælp til næste skridt
+                      <a href="https://calendly.com/sebastian-raadgiverxperten/10min" style="display:block;text-align:center;background:#253457;color:#ffffff;text-decoration:none;border-radius:999px;padding:15px 18px;font-size:14px;font-weight:900;">
+                        Book et 10 min. telefonmøde
                       </a>
                     </td>
                   </tr>
